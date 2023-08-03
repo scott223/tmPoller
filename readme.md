@@ -3,10 +3,10 @@ a small Rust program that checks if there are new tickets available for Ticketma
 
 ## Objectives
 - learn a bit about Rust
--- error handling
--- declaring variables, borrowing
--- threads
--- ...
+    - error handling
+    - declaring variables, borrowing
+    - threads
+    - ...
 - do proper commenting & GIT
 
 ## Todo
