@@ -1,8 +1,9 @@
 pub mod schema;
 use std::error::Error;
 
-// TicketMaster API: full response (JSON deserialized)
 
+// main function
+// this function will initialize and variables needed, and call the main loop function (located in lib.rs). after loop is finished, do cleanup
 fn main() -> Result<(), Box<dyn Error>> {
     // Initiliazing main variable holding the events, and pre-filling it with two events
     let mut tm_events = vec![
