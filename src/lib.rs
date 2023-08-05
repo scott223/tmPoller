@@ -5,7 +5,7 @@ pub mod schema;
 
 use crate::schema::TMEvent;
 
-// Function run_run_main_loop
+// Function run
 //
 // creates an "infitine" loop that checks for keystrokes, and executes the correspondig functions
 //
