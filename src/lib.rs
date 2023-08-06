@@ -1,9 +1,12 @@
-use crossterm::event::{self, Event, KeyCode};
-use std::{error::Error, time::Duration};
+use crossterm::event::{self, Event, KeyCode, poll};
+use std::{error::Error, time::Duration, time::Instant};
+
 mod event_poller;
 pub mod schema;
 
 use crate::schema::TMEvent;
+
+const DEFAULT_POLLING_INTERVAL: Duration = Duration::new(60,0);
 
 // Function run
 //
@@ -16,6 +19,9 @@ use crate::schema::TMEvent;
 // Returns an Ok(()) if no errors and an Box<error> in case there is an (underlying error)
 
 pub fn run(tm_events: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
+    let mut last_update = Instant::now();
+    let mut poll_on_interval = DEFAULT_POLLING_INTERVAL;
+
     // Running main loop
     'mainloop: loop {
         while event::poll(Duration::default())? {
@@ -31,7 +37,10 @@ pub fn run(tm_events: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
 
                         match event_poller::update_events(tm_events) {
                             // running update function & print a message for feedback. passing the main variable as mutable borrow, so the function can actually change the variable
-                            Ok(()) => println!("All events updated"),
+                            Ok(()) => {
+                                last_update = Instant::now();
+                                println!("All events updated");
+                            }
                             Err(e) => println!("Error: {}", e),
                         }
                         println!("Data dump: {:?}", tm_events); // temp: data dump
@@ -39,6 +48,21 @@ pub fn run(tm_events: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
                     _ => {}
                 }
             }
+        }
+
+        if Instant::now().duration_since(last_update) > poll_on_interval {
+            // Update interval exceeded
+            println!("Interval triggered polling of all events");
+
+            match event_poller::update_events(tm_events) {
+                // running update function & print a message for feedback. passing the main variable as mutable borrow, so the function can actually change the variable
+                Ok(()) => {
+                    last_update = Instant::now();
+                    println!("All events updated")
+                }
+                Err(e) => println!("Error: {}", e),
+            }
+            println!("Data dump: {:?}", tm_events); // temp: data dump
         }
     }
 

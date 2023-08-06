@@ -1,22 +1,19 @@
-pub mod schema;
 use std::error::Error;
-
 
 // main function
 // this function will initialize and variables needed, and call the main loop function (located in lib.rs). after loop is finished, do cleanup
 fn main() -> Result<(), Box<dyn Error>> {
     // Initiliazing main variable holding the events, and pre-filling it with two events
     let mut tm_events = vec![
-        tm_poller::schema::TMEvent {
-            // Some random event that has tickets
-            id: "284753".to_string(),
-            num_offers: 0,
-        },
-        tm_poller::schema::TMEvent {
+        tm_poller::schema::TMEvent::new(
+            "284753".to_string(),
+            0,
+        ),
+        tm_poller::schema::TMEvent::new(
             // Lowlands
-            id: "280409".to_string(),
-            num_offers: 0,
-        },
+            "280409".to_string(),
+            0,
+        ),
     ];
     println!("Initialized, running program ...");
 

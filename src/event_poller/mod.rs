@@ -1,6 +1,7 @@
 use reqwest::blocking::get;
 use serde::Deserialize;
 use std::error::Error;
+use chrono::{Local};
 
 use crate::schema::TMEvent;
 
@@ -35,6 +36,7 @@ pub fn update_events(evs: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
             Ok(n) => {
                 println!("Succesfully polled {}: there are {} offers", ev.id, n);
                 ev.num_offers = n as u32; // Updating EV; note that this will change the top variable struct as we have borrowed the variable
+                ev.last_updated = Local::now();
             }
             Err(err) => return Err(err),
         }
