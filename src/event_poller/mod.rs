@@ -31,13 +31,11 @@ pub struct Offer {
 pub fn update_events(evs: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
     for ev in evs.iter_mut() {
         // Iterating over all the events
-        match poll_event(&ev.id) {
+        match poll_event(ev) {
             // checking if was succes
-            Ok(n) => {
-                println!("Succesfully polled {}: there are {} offers", ev.id, n);
-                ev.num_offers = n as u32; // Updating EV; note that this will change the top variable struct as we have borrowed the variable
-                ev.last_updated = Local::now();
-            }
+            Ok(r_ev) => {
+                println!("Succesfully polled {}: there are {} offers", r_ev.id, r_ev.num_offers);
+           }
             Err(err) => return Err(err),
         }
     }
@@ -54,8 +52,10 @@ pub fn update_events(evs: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
 //
 // Returns the number of offers as usize integer if no errors and an Box<error> in case there is an (underlying error)
 
-fn poll_event(id: &String) -> Result<usize, Box<dyn Error>> {
-    let request_url = format!("{}{}", BASE_URL, id);
+fn poll_event(ev: &mut TMEvent) -> Result<&mut TMEvent, Box<dyn Error>> {
+    let request_url = format!("{}{}", BASE_URL, ev.id);
     let resp: TMResponse = get(request_url)?.json()?; // Doing the update, note the ? as this will propogate errors up!
-    Ok(resp.offers.len()) // return the number of offers (we could have passed the event too)
+    ev.num_offers = resp.offers.len();
+    ev.last_updated = Local::now();
+    Ok(ev)// return the number of offers (we could have passed the event too)
 }
