@@ -18,9 +18,7 @@ use schema::App;
 mod event_poller;
 pub mod schema;
 
-use crate::schema::TMEvent;
-
-const DEFAULT_POLLING_INTERVAL: Duration = Duration::new(60, 0);
+const DEFAULT_POLLING_INTERVAL: Duration = Duration::new(30, 0);
 
 /// Setup the terminal. This is where you would enable raw mode, enter the alternate screen, and
 /// hide the cursor. This example does not handle errors. A more robust application would probably
@@ -149,6 +147,5 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     let messages =
     List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
     f.render_widget(messages, chunks[1]);
-
 
 }
