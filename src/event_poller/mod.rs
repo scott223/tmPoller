@@ -28,6 +28,7 @@ pub struct Offer {
 // Returns an Ok(()) if no errors and an Box<error> in case there is an (underlying error)
 
 pub fn update_events(evs: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
+    
     for ev in evs.iter_mut() {
         // Iterating over all the events
         match poll_event(ev) {
