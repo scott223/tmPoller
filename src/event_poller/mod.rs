@@ -56,7 +56,8 @@ pub fn update_events(evs: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
 fn poll_event(ev: &mut TMEvent) -> Result<(), Box<dyn Error>> {
     let request_url = format!("{}{}", BASE_URL, ev.id);
     let response = get(request_url)?;
-    if response.status() == reqwest::StatusCode::OK {
+   
+   if response.status() == reqwest::StatusCode::OK {
         ev.last_update_status_code = response.status();    
     } else {
         ev.last_update_status_code = response.status();
