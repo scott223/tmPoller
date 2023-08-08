@@ -39,9 +39,9 @@ pub fn run(tm_events: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
                             // running update function & print a message for feedback. passing the main variable as mutable borrow, so the function can actually change the variable
                             Ok(()) => {
                                 last_update = Instant::now();
-                                println!("All events updated");
+                                println!("Events updated");
                             }
-                            Err(e) => println!("Error: {}", e),
+                            Err(e) => println!("Error with updating events: {}", e),
                         }
                         println!("Data dump: {:?}", tm_events); // temp: data dump
                     }

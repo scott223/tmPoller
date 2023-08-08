@@ -7,13 +7,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut tm_events = vec![
         tm_poller::schema::TMEvent::new(
             "284753".to_string(),
-            0,
         ),
         tm_poller::schema::TMEvent::new(
             // Lowlands
             "280409".to_string(),
-            0,
-        ),
+        ), 
     ];
     println!("Initialized, running program ...");
 
