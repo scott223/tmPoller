@@ -1,9 +1,9 @@
+use chrono::Local;
 use reqwest::blocking::get;
 use serde::Deserialize;
 use std::error::Error;
-use chrono::{Local};
 
-use crate::schema::TMEvent;
+use crate::schema::{TMEvent, App};
 
 const BASE_URL: &str = "https://availability.ticketmaster.eu/api/v2/TM_NL/resale/";
 
@@ -27,20 +27,20 @@ pub struct Offer {
 //
 // Returns an Ok(()) if no errors and an Box<error> in case there is an (underlying error)
 
-pub fn update_events(evs: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
-    
-    for ev in evs.iter_mut() {
+pub fn update_events(app: &mut App) -> Result<(), Box<dyn Error>> {
+    for ev in app.events.iter_mut() {
         // Iterating over all the events
         match poll_event(ev) {
             // checking if was succes
             Ok(r_ev) => {
-                println!("Succesfully polled {}: there are {} offers", ev.id, ev.num_offers);
-           }
-            Err(err) => { 
-                eprintln!("Error polling event {}: {}",ev.id,err)
-            },
+
+            }
+            Err(err) => {
+                eprintln!("Error polling event {}: {}", ev.id, err)
+            }
         }
     }
+    app.submit_message("Event update completed");
     Ok(())
 }
 
@@ -56,15 +56,16 @@ pub fn update_events(evs: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
 fn poll_event(ev: &mut TMEvent) -> Result<(), Box<dyn Error>> {
     let request_url = format!("{}{}", BASE_URL, ev.id);
     let response = get(request_url)?;
-   
-   if response.status() == reqwest::StatusCode::OK {
-        ev.last_update_status_code = response.status();    
+
+    if response.status() == reqwest::StatusCode::OK {
+        ev.last_update_status_code = response.status();
     } else {
         ev.last_update_status_code = response.status();
         return Err(response.status().as_str().into());
     }
-    
+
     let result: TMResponse = response.json()?;
     (ev.num_offers, ev.last_updated) = (result.offers.len(), Local::now());
-    Ok(())// return OK - no need to return the event as we have borrowed
+
+    Ok(()) // return OK - no need to return the event as we have borrowed
 }

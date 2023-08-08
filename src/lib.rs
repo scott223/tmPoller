@@ -1,20 +1,26 @@
-use std::{error::Error, time::Duration, time::Instant, io::{self, Stdout}};
+use std::{
+    error::Error,
+    io::{self, Stdout},
+    time::Duration,
+    time::Instant,
+};
 
 use crossterm::{
-    event::{self, Event, KeyCode, poll},
+    event::{self, poll, Event, KeyCode},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{backend::*, prelude::*, widgets::*};
 
 use anyhow::{Context, Result};
+use schema::App;
 
 mod event_poller;
 pub mod schema;
 
 use crate::schema::TMEvent;
 
-const DEFAULT_POLLING_INTERVAL: Duration = Duration::new(60,0);
+const DEFAULT_POLLING_INTERVAL: Duration = Duration::new(60, 0);
 
 /// Setup the terminal. This is where you would enable raw mode, enter the alternate screen, and
 /// hide the cursor. This example does not handle errors. A more robust application would probably
@@ -52,13 +58,18 @@ fn render_app(frame: &mut ratatui::Frame<CrosstermBackend<Stdout>>) {
 //
 // Returns an Ok(()) if no errors and an Box<error> in case there is an (underlying error)
 
-pub fn run(terminal: &mut Terminal<CrosstermBackend<Stdout>>, tm_events: &mut Vec<TMEvent>) -> Result<(), Box<dyn Error>> {
+pub fn run(
+    terminal: &mut Terminal<CrosstermBackend<Stdout>>,
+    mut app: App,
+) -> Result<(), Box<dyn Error>> {
     let mut last_update = Instant::now();
-    let mut poll_on_interval = DEFAULT_POLLING_INTERVAL;
+    let poll_on_interval = DEFAULT_POLLING_INTERVAL;
+
+    app.submit_message("Initialized, running program ...");
 
     // Running main loop
     'mainloop: loop {
-        terminal.draw(|f| ui(f, tm_events))?;
+        terminal.draw(|f| ui(f, &app))?;
 
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
@@ -69,17 +80,17 @@ pub fn run(terminal: &mut Terminal<CrosstermBackend<Stdout>>, tm_events: &mut Ve
                     }
                     KeyCode::Char('p') => {
                         // User pressed 'p', forcing an update of the events
-                        println!("User forced polling of all events");
+                        app.submit_message("User forced polling of all events");
 
-                        match event_poller::update_events(tm_events) {
+                        match event_poller::update_events(&mut app) {
                             // running update function & print a message for feedback. passing the main variable as mutable borrow, so the function can actually change the variable
                             Ok(()) => {
                                 last_update = Instant::now();
-                                println!("Events updated");
+                                app.submit_message("Events updated");
                             }
-                            Err(e) => println!("Error with updating events: {}", e),
+                            Err(e) => eprintln!("Error with updating events: {}", e),
                         }
-                        println!("Data dump: {:?}", tm_events); // temp: data dump
+                        // println!("Data dump: {:?}", app.events); // temp: data dump
                     }
                     _ => {}
                 }
@@ -88,34 +99,34 @@ pub fn run(terminal: &mut Terminal<CrosstermBackend<Stdout>>, tm_events: &mut Ve
 
         if Instant::now().duration_since(last_update) > poll_on_interval {
             // Update interval exceeded
-            println!("Interval triggered polling of all events");
+            app.submit_message("Interval triggered polling of all events");
 
-            match event_poller::update_events(tm_events) {
+            match event_poller::update_events(&mut app) {
                 // running update function & print a message for feedback. passing the main variable as mutable borrow, so the function can actually change the variable
                 Ok(()) => {
                     last_update = Instant::now();
-                    println!("All events updated")
+                    app.submit_message("All events updated")
                 }
-                Err(e) => println!("Error: {}", e),
+                Err(e) => eprintln!("Error: {}", e),
             }
-            println!("Data dump: {:?}", tm_events); // temp: data dump
+            // println!("Data dump: {:?}", app.events); // temp: data dump
         }
     }
 
     Ok(())
 }
 
-fn ui<B: Backend>(f: &mut Frame<B>, tm_events: &mut Vec<TMEvent>) {
+fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(f.size());
 
-    let block = Block::default()
-    .title("Events polled")
-    .borders(Borders::ALL);
-
-    let items = [ListItem::new("Item 1"), ListItem::new("Item 2"), ListItem::new("Item 3")];
+    let items = [
+        ListItem::new("Item 1"),
+        ListItem::new("Item 2"),
+        ListItem::new("Item 3"),
+    ];
     let list = List::new(items)
         .block(Block::default().title("List").borders(Borders::ALL))
         .style(Style::default().fg(Color::White))
@@ -123,5 +134,21 @@ fn ui<B: Backend>(f: &mut Frame<B>, tm_events: &mut Vec<TMEvent>) {
         .highlight_symbol(">>");
 
     f.render_widget(list, chunks[0]);
+
+    let messages: Vec<ListItem> = app
+        .messages
+        .iter()
+        .rev()
+        .enumerate()
+        .map(|(i, m)| {
+            let content = Line::from(Span::raw(format!("{i}: {m}")));
+            ListItem::new(content)
+        })
+        .collect();
+
+    let messages =
+    List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
+    f.render_widget(messages, chunks[1]);
+
 
 }
