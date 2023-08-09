@@ -6,7 +6,7 @@ use std::{
 };
 
 use crossterm::{
-    event::{self, poll, Event, KeyCode},
+    event::{self, Event, KeyCode},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -132,7 +132,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             .events
             .iter()
             .enumerate()
-            .map(|(i,e)| {
+            .map(|(_i,e)| {
                 let line_item = Line::from(Span::raw(format!("{} ({}) has {} offers (last polled at {} ({}))",e.name,e.id, e.num_offers, e.last_updated.format("%H:%M:%S"),e.last_update_status_code)));
                 ListItem::new(line_item)
             })

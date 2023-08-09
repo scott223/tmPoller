@@ -1,8 +1,8 @@
-use std::{error::Error};
+use std::error::Error;
 use anyhow::{Context, Result};
 
 // main function
-// this function will initialize and variables needed, and call the main loop function (located in lib.rs). after loop is finished, do cleanup
+// This function will initialize and variables needed, and call the main loop function (located in lib.rs). after loop is finished, do cleanup
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Initiliazing main variable holding the events, and pre-filling it with two events
@@ -15,9 +15,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     // Preparing for exit
-
     tm_poller::restore_terminal(&mut terminal).context("restore terminal failed")?;
-
     println!("Quiting, bye!");
+    
     Ok(())
 }
