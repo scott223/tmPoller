@@ -2,7 +2,7 @@
 a small Rust program that checks if there are new tickets available for Ticketmaster events in the Netherlands
 
 ![GitHub CI
-Status](https://img.shields.io/github/actions/workflow/status/scott223/tmPoller/actions/workflows/rust.yml?style=flat-square&logo=github)
+Status](https://img.shields.io/github/actions/workflow/status/scott223/tmPoller/rust.yml?style=flat-square&logo=github)
 
 ## Objectives
 - learn a bit about Rust
