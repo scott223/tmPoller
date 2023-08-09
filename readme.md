@@ -1,8 +1,8 @@
 # Ticket Master Poller (tmPoller)
 a small Rust program that checks if there are new tickets available for Ticketmaster events in the Netherlands
 
-![rust build workflow]
-(https://github.com/scott223/tmpoller/actions/workflows/rust.yml/badge.svg)
+[![GitHub CI
+Status](https://img.shields.io/github/actions/workflow/status/scott223/tmpoller/actions/workflows/rust.yml?style=flat-square&logo=github)]
 
 ## Objectives
 - learn a bit about Rust
