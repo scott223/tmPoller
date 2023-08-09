@@ -6,12 +6,13 @@ a small Rust program that checks if there are new tickets available for Ticketma
     - error handling
     - declaring variables, borrowing
     - threads
+    - unit and integration testing
     - ...
 - do proper commenting & GIT
 
 ## Todo
-- [ ] add a timer that polls every set interval
-- [ ] add command line gui (start/pause the polling, change the interval, show the latest results, add/remove events)
+- [x] add a timer that polls every set interval
+- [ ] add command line gui (start/pause the polling, change the interval, ~~show the latest results~~, add/remove events)
 - [ ] put the polls in seperate threads
 - [x] create basic progam loop
 - [x] create polling function
