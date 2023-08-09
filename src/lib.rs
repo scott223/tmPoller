@@ -35,7 +35,6 @@ pub fn run(
     let poll_on_interval = DEFAULT_POLLING_INTERVAL;
 
     app.submit_message("Initialized, running program ...");
-
     app.submit_message("Executing first poll");
 
     match event_poller::update_events(&mut app) {
@@ -45,12 +44,12 @@ pub fn run(
             app.submit_message("All events updated");
         }
         Err(e) => eprintln!("Error with updating events: {}", e),
-    }    
+    }
     // Running main loop
     'mainloop: loop {
         terminal.draw(|f| poller_ui::ui(f, &app))?;
-
         while event::poll(Duration::default())? {
+
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
                     KeyCode::Esc | KeyCode::Char('q') => {

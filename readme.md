@@ -17,6 +17,6 @@ A small Rust program that checks if there are new tickets available for Ticketma
 - [x] add a timer that polls every set interval
 - [ ] add command line gui (start/pause the polling, change the interval, ~~show the latest results~~, add/remove events)
 - [ ] put the polls in seperate threads
-- [x] create basic progam loop
+- [x] create basic program loop
 - [x] create polling function
 - [x] add functionality to poll multiple events (loop)
