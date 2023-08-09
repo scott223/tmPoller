@@ -29,7 +29,6 @@ impl Default for App {
             messages: Vec::new(),
         }
     }
-
 }
 
 // a single TicketMaster event
@@ -45,7 +44,6 @@ pub struct TMEvent {
 // Constructor like function to create a new TM event
 impl TMEvent {
     pub fn new(a_id: String, a_name: String) -> Self {
-
         let new_self = Self {
             id: a_id,
             name: a_name,
@@ -55,7 +53,6 @@ impl TMEvent {
         };
 
         return new_self
-
     }
 }
 

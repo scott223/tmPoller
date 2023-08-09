@@ -42,7 +42,7 @@ pub fn update_events(app: &mut App) -> Result<(), Box<dyn Error>> {
         }
     }
     Ok(())
-}
+} // fun update_events
 
 // Function poll_event
 //
@@ -69,4 +69,4 @@ fn poll_event(ev: &mut TMEvent) -> Result<(), Box<dyn Error>> {
     ev.num_offers = result.offers.len();
 
     Ok(()) // return OK - no need to return the event as we have borrowed
-}
+} // fun poll_event
