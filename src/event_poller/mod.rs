@@ -7,6 +7,7 @@ use crate::schema::{TMEvent, App};
 
 const BASE_URL: &str = "https://availability.ticketmaster.eu/api/v2/TM_NL/resale/";
 
+// TicketMaster API: full response (JSON deserialized)
 #[derive(Deserialize, Debug)]
 pub struct TMResponse {
     offers: Vec<Offer>,
@@ -26,7 +27,6 @@ pub struct Offer {
 // * tm_events - a vector of TMEvent that holds all the current events that need to be polled, and polling data gets added to this vector. note we need to keep ownership in the main function, and borrow ownership to the functions below
 //
 // Returns an Ok(()) if no errors and an Box<error> in case there is an (underlying error)
-
 pub fn update_events(app: &mut App) -> Result<(), Box<dyn Error>> {
     for ev in app.events.iter_mut() {
         // Iterating over all the events
@@ -36,11 +36,11 @@ pub fn update_events(app: &mut App) -> Result<(), Box<dyn Error>> {
 
             }
             Err(err) => {
-                eprintln!("Error polling event {}: {}", ev.id, err)
+                // let error_line = format!("Error polling event {}: {}", ev.id, err);
+                // app.submit_message(error_line.clone.().as_str());
             }
         }
     }
-    app.submit_message("Event update completed");
     Ok(())
 }
 
@@ -52,7 +52,6 @@ pub fn update_events(app: &mut App) -> Result<(), Box<dyn Error>> {
 // * id - an &String that holds the event number that needs to be bolled
 //
 // Returns the number of offers as usize integer if no errors and an Box<error> in case there is an (underlying error)
-
 fn poll_event(ev: &mut TMEvent) -> Result<(), Box<dyn Error>> {
     let request_url = format!("{}{}", BASE_URL, ev.id);
     let response = get(request_url)?;
@@ -64,8 +63,10 @@ fn poll_event(ev: &mut TMEvent) -> Result<(), Box<dyn Error>> {
         return Err(response.status().as_str().into());
     }
 
+    ev.last_updated = Local::now();
+
     let result: TMResponse = response.json()?;
-    (ev.num_offers, ev.last_updated) = (result.offers.len(), Local::now());
+    ev.num_offers = result.offers.len();
 
     Ok(()) // return OK - no need to return the event as we have borrowed
 }
