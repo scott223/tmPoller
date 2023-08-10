@@ -53,20 +53,20 @@ pub fn update_events(app: &mut App) -> Result<(), Box<dyn Error>> {
 //
 // Returns the number of offers as usize integer if no errors and an Box<error> in case there is an (underlying error)
 fn poll_event(ev: &mut TMEvent) -> Result<(), Box<dyn Error>> {
-    let request_url = format!("{}{}", BASE_URL, ev.id);
-    let response = get(request_url)?;
+    //let request_url = format!("{}{}", BASE_URL, ev.id);
+    //let response = get(request_url)?;
 
-    ev.last_updated = Local::now();
+    //ev.last_updated = Local::now();
 
-    if response.status() == reqwest::StatusCode::OK {
-        ev.last_update_status_code = response.status();
-    } else {
-        ev.last_update_status_code = response.status();
-        return Err(response.status().as_str().into());
-    }
+   // if response.status() == reqwest::StatusCode::OK {
+   //     ev.last_update_status_code = response.status();
+    //} else {
+    //    ev.last_update_status_code = response.status();
+    //    return Err(response.status().as_str().into());
+    //}
 
-    let result: TMResponse = response.json()?;
-    ev.num_offers = result.offers.len();
+    //let result: TMResponse = response.json()?;
+    //ev.num_offers = result.offers.len();
 
     Ok(()) // return OK - no need to return the event as we have borrowed
 } // fun poll_event

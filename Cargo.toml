@@ -12,4 +12,5 @@ serde = { version = "1.0.180", features = ["derive"] }
 reqwest = { version = "0.11.18", features = ["blocking", "json"] }
 chrono = "0.4.26"
 anyhow = "1.0.72"
-tiny_http = "0.11"
+actix-web = "4"
+tokio = { version = "1", features = ["full", "sync"] }
