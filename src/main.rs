@@ -8,7 +8,7 @@ use tm_poller::run;
 
 // main function
 // This function will initialize and variables needed, and call the main loop function (located in lib.rs). after loop is finished, do cleanup
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread", worker_threads = 2)]
 async fn main() -> Result<(), Box<dyn Error>> {
     // Initiliazing main variable holding the events, and pre-filling it with two events
     let app = tm_poller::schema::App::default();
@@ -18,9 +18,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .bind("127.0.0.1:8080")?
         // disable default signal handling
         .disable_signals()
+        .workers(2)
         .run(); //configure the http server
 
-    let server_handle = server.handle(); //set a handle
+    let server_handle = server.handle(); //set a handle for the server
 
     let server_task = tokio::spawn(server); //spawn the server as a tokio worker
     let worker_task = tokio::spawn(run(tx, app)); //spawn the main app as a tokio worker
@@ -30,7 +31,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         while let Some(shutdown_signal) = rx.recv().await { //wait untill we have a shutdown signal from on of the workers
 
         }
-        
+
         let server_stop = server_handle.stop(true); // stop the http server
         // await shutdown of tasks
         server_stop.await;
