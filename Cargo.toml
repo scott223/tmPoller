@@ -13,4 +13,4 @@ reqwest = { version = "0.11.18", features = ["blocking", "json"] }
 chrono = "0.4.26"
 anyhow = "1.0.72"
 actix-web = "4"
-tokio = { version = "1", features = ["full", "sync"] }
+tokio = { version = "1.29.1", features = ["full"] }

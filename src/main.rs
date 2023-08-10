@@ -30,6 +30,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         while let Some(shutdown_signal) = rx.recv().await { //wait untill we have a shutdown signal from on of the workers
 
         }
+        
         let server_stop = server_handle.stop(true); // stop the http server
         // await shutdown of tasks
         server_stop.await;
