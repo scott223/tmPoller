@@ -2,6 +2,8 @@ use std::{
     io::{self, Stdout},
 };
 
+use std::sync::{Arc, Mutex};
+
 use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -9,7 +11,7 @@ use crossterm::{
 use ratatui::{backend::*, prelude::*, widgets::*};
 use anyhow::{Context, Result};
 
-use crate::schema::App;
+use crate::schema::{App, Messages};
 
 /// Setup the terminal. This is where we would enable raw mode, enter the alternate screen, and
 /// hide the cursor. This functions does not handle errors yet. A more robust application would probably
@@ -35,19 +37,21 @@ pub fn restore_terminal(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Re
 //
 // arguments
 // f (frame) and App
-pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
+pub fn ui<B: Backend>(f: &mut Frame<B>, app: &Arc<Mutex<App>>, messages: &Messages) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(f.size());
 
-    if app.events.len() > 0 {
-        let event_items: Vec<ListItem> = app
+    let mut unlocked_app = app.lock().unwrap();
+
+    if unlocked_app.events.len() > 0 {
+        let event_items: Vec<ListItem> = unlocked_app
             .events
             .iter()
             .enumerate()
             .map(|(_i,e)| {
-                let line_item = Line::from(Span::raw(format!("{} ({}) has {} offers (last polled at {} ({}))",e.name,e.id, e.num_offers, e.last_updated.format("%H:%M:%S"),e.last_update_status_code)));
+                let line_item = Line::from(Span::raw(format!("{} ({}) has {} offers (last polled at {} (-))",e.name,e.id, e.num_offers, e.last_updated.expect("cannot unwrap to datetime").format("%H:%M:%S"))));
                 ListItem::new(line_item)
             })
             .collect();
@@ -63,13 +67,13 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
        //TODO write a nice message when there are no events to be polled yet
     }
 
-    let messages: Vec<ListItem> = app
+    let messages: Vec<ListItem> = messages
         .messages
         .iter()
         .rev()
         .enumerate()
         .map(|(_i, m)| {
-            let content = Line::from(Span::raw(format!("{} | {}",m.datetime_sent.format("%d/%m %H:%M:%S"),m.content)));
+            let content = Line::from(Span::raw(format!("{} | {}",m.datetime_sent.expect("dt error").format("%d/%m %H:%M:%S"),m.content)));
             ListItem::new(content)
         })
         .collect();

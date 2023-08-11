@@ -1,9 +1,11 @@
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Utc};
+use serde::Serialize;
+use chrono::serde::ts_seconds_option;
 
 // Main App state, that holds the events and messages
+#[derive(Clone, Serialize)]
 pub struct App {
     pub events: Vec<TMEvent>,
-    pub messages: Vec<Message>,
 }
 
 // default adds some events to the App state for testing
@@ -26,19 +28,19 @@ impl Default for App {
                     "Dummy".to_string(),
                 ),  
             ],
-            messages: Vec::new(),
         }
     }
 }
 
 // a single TicketMaster event
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TMEvent {
     pub id: String,
     pub name: String,
     pub num_offers: usize,
-    pub last_updated: DateTime<Local>,
-    pub last_update_status_code : reqwest::StatusCode,
+    #[serde(with = "ts_seconds_option")] //force the last update into a seconds timestamp
+    pub last_updated: Option<DateTime<Utc>>,
+    //pub last_update_status_code : reqwest::StatusCode,
 }
 
 // Constructor like function to create a new TM event
@@ -48,16 +50,30 @@ impl TMEvent {
             id: a_id,
             name: a_name,
             num_offers: 0 as usize,
-            last_updated: Local::now(),
-            last_update_status_code : reqwest::StatusCode::CONTINUE, // now picked this random status code as a starting code
+            last_updated: Some(Utc::now()),
+            //last_update_status_code : reqwest::StatusCode::CONTINUE, // now picked this random status code as a starting code
         };
 
         return new_self
     }
 }
 
+pub struct Messages {
+    pub messages: Vec<Message>,
+}
+
+impl Default for Messages {
+    fn default() -> Messages {
+        Messages {
+            messages: vec![
+                Message::new("Initializing".to_string()),
+            ],
+        }
+    }
+}
+
 // Functions to change the App state, for now only for adding a new message
-impl App {
+impl Messages {
     pub fn submit_message(&mut self, input: &str) {
         let new_message = Message::new(input.to_string().clone());
         self.messages.push(new_message);
@@ -67,14 +83,14 @@ impl App {
 // a single message that holds a string and a DateTime
 pub struct Message {
     pub content: String,
-    pub datetime_sent: DateTime<Local>,
+    pub datetime_sent: Option<DateTime<Utc>>,
 }
 
 impl Message {
     pub fn new(msg: String) -> Self {
         let new_message: Message = Self {
             content: msg,
-            datetime_sent: Local::now(),
+            datetime_sent: Some(Utc::now()),
         };
         return new_message
     }

@@ -7,8 +7,9 @@ use std::{
 
 use std::sync::{
     atomic::{AtomicBool, Ordering},
-    Arc,
 };
+
+use std::sync::{Arc, Mutex};
 
 use crossterm::{
     event::{self, Event, KeyCode},
@@ -21,6 +22,7 @@ pub mod schema;
 pub mod poller_ui;
 mod event_poller;
 
+use schema::Messages;
 use tokio::sync::mpsc;
 
 use poller_ui::{setup_terminal,restore_terminal};
@@ -38,7 +40,8 @@ const DEFAULT_POLLING_INTERVAL: Duration = Duration::new(30, 0);
 // Returns an Ok(()) if no errors and an Box<error> in case there is an (underlying error)
 pub async fn run(
     mut shutdown_channel: mpsc::Sender<bool>,
-    mut app: schema::App,
+    mut app: Arc<Mutex<schema::App>>,
+    mut messages: schema::Messages,
 ) -> std::io::Result<()> {
     let mut last_update = Instant::now();
     let poll_on_interval = DEFAULT_POLLING_INTERVAL;
@@ -47,38 +50,37 @@ pub async fn run(
         Err(error) => panic!("Error {}",error)
     };
 
-    app.submit_message("Initialized, running program ...");
-    app.submit_message("Executing first poll");
+    messages.submit_message("Initialized, running program ...");
+    messages.submit_message("Executing first poll");
 
     match event_poller::update_events(&mut app) {
         // running update function & print a message for feedback. passing the main variable as mutable borrow, so the function can actually change the variable
         Ok(()) => {
             last_update = Instant::now();
-            app.submit_message("All events updated");
+            messages.submit_message("All events updated");
         }
         Err(e) => eprintln!("Error with updating events: {}", e),
     }
     // Running main loop
     'mainloop: loop {
-        terminal.draw(|f| poller_ui::ui(f, &app))?;
+        terminal.draw(|f| poller_ui::ui(f, &app, &messages))?;
         while event::poll(Duration::default())? {
 
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
                     KeyCode::Esc | KeyCode::Char('q') => {
                         // User pressed ESC or 'q', breaking the main loop
-                        shutdown_channel.send(true).await.expect("cannot send shutdown message");
                         break 'mainloop;
                     }
                     KeyCode::Char('p') => {
                         // User pressed 'p', forcing an update of the events
-                        app.submit_message("User forced polling of all events");
+                        messages.submit_message("User forced polling of all events");
 
                         match event_poller::update_events(&mut app) {
                             // running update function & print a message for feedback. passing the main variable as mutable borrow, so the function can actually change the variable
                             Ok(()) => {
                                 last_update = Instant::now();
-                                app.submit_message("All events updated");
+                                messages.submit_message("All events updated");
                             }
                             Err(e) => eprintln!("Error with updating events: {}", e),
                         }
@@ -91,13 +93,13 @@ pub async fn run(
 
         if Instant::now().duration_since(last_update) > poll_on_interval {
             // Update interval exceeded
-            app.submit_message("Interval triggered polling of all events");
+            messages.submit_message("Interval triggered polling of all events");
 
             match event_poller::update_events(&mut app) {
                 // running update function & print a message for feedback. passing the main variable as mutable borrow, so the function can actually change the variable
                 Ok(()) => {
                     last_update = Instant::now();
-                    app.submit_message("All events updated")
+                    messages.submit_message("All events updated")
                 }
                 Err(e) => eprintln!("Error: {}", e),
             }
@@ -105,7 +107,7 @@ pub async fn run(
         }
     }
 
-    poller_ui::restore_terminal(&mut terminal).context("restore terminal failed");
-
+    poller_ui::restore_terminal(&mut terminal).context("restore terminal failed"); //TODO handle a possible error
+    shutdown_channel.send(true).await.expect("cannot send shutdown message");
     Ok(())
 } // fn run
