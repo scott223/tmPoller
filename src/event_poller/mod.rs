@@ -4,7 +4,7 @@ use serde::Deserialize;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
 
-use crate::schema::{TMEvent, App};
+use crate::schema::{App, Messages, TMEvent};
 
 const BASE_URL: &str = "https://availability.ticketmaster.eu/api/v2/TM_NL/resale/";
 
@@ -28,20 +28,19 @@ pub struct Offer {
 // * tm_events - a vector of TMEvent that holds all the current events that need to be polled, and polling data gets added to this vector. note we need to keep ownership in the main function, and borrow ownership to the functions below
 //
 // Returns an Ok(()) if no errors and an Box<error> in case there is an (underlying error)
-pub fn update_events(app: &mut Arc<Mutex<App>>) -> Result<(), Box<dyn Error>> {
-    
+pub fn update_events(
+    app: &mut Arc<Mutex<App>>,
+    messages: &mut Messages,
+) -> Result<(), Box<dyn Error>> {
     let mut unlocked_app = app.lock().unwrap(); //get a lock from the Mutex
-    
+
     for ev in unlocked_app.events.iter_mut() {
         // Iterating over all the events
         match poll_event(ev) {
             // checking if was succes
-            Ok(r_ev) => {
-
-            }
+            Ok(()) => {}
             Err(err) => {
-                // let error_line = format!("Error polling event {}: {}", ev.id, err);
-                // app.submit_message(error_line.clone.().as_str());
+                messages.submit_message(format!("error updating an event {}", err).as_str());
             }
         }
     }
@@ -62,8 +61,8 @@ fn poll_event(ev: &mut TMEvent) -> Result<(), Box<dyn Error>> {
 
     ev.last_updated = Some(Utc::now());
 
-   // if response.status() == reqwest::StatusCode::OK {
-   //     ev.last_update_status_code = response.status();
+    // if response.status() == reqwest::StatusCode::OK {
+    //     ev.last_update_status_code = response.status();
     //} else {
     //    ev.last_update_status_code = response.status();
     //    return Err(response.status().as_str().into());
