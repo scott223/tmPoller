@@ -11,6 +11,11 @@ ratatui = { version = "0.22.0", features = ["all-widgets"]}
 serde = { version = "1.0.180", features = ["derive"] }
 reqwest = { version = "0.11.18", features = ["blocking", "json"] }
 chrono = { version = "0.4.26", features = ["serde"] }
-anyhow = "1.0.72"
 actix-web = "4.3.1"
 tokio = { version = "1.29.1", features = ["full"] }
+
+[profile.release]
+lto = true          # Enable link-time optimization
+codegen-units = 1   # Reduce number of codegen units to increase optimizations
+panic = 'abort'     # Abort on panic
+strip = true        # Strip symbols from binary*

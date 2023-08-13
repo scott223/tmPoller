@@ -1,8 +1,8 @@
+use chrono::serde::ts_seconds_option;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use chrono::serde::ts_seconds_option;
 
-// Main App state, that holds the events and messages
+// Main App state, that holds the eventss
 #[derive(Clone, Serialize)]
 pub struct App {
     pub events: Vec<TMEvent>,
@@ -13,10 +13,7 @@ impl Default for App {
     fn default() -> App {
         App {
             events: vec![
-                TMEvent::new(
-                    "284753".to_string(),
-                    "Dynamo Metalfest".to_string(),
-                ),
+                TMEvent::new("284753".to_string(), "Dynamo Metalfest".to_string()),
                 TMEvent::new(
                     // Lowlands
                     "280409".to_string(),
@@ -26,7 +23,7 @@ impl Default for App {
                     // Dummy
                     "280407".to_string(),
                     "Dummy".to_string(),
-                ),  
+                ),
             ],
         }
     }
@@ -54,7 +51,7 @@ impl TMEvent {
             //last_update_status_code : reqwest::StatusCode::CONTINUE, // now picked this random status code as a starting code
         };
 
-        return new_self
+        return new_self;
     }
 }
 
@@ -65,9 +62,7 @@ pub struct Messages {
 impl Default for Messages {
     fn default() -> Messages {
         Messages {
-            messages: vec![
-                Message::new("Initializing".to_string()),
-            ],
+            messages: vec![Message::new("Initializing".to_string())],
         }
     }
 }
@@ -92,6 +87,6 @@ impl Message {
             content: msg,
             datetime_sent: Some(Utc::now()),
         };
-        return new_message
+        return new_message;
     }
 }
